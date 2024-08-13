@@ -15,13 +15,14 @@ func main() {
 	db, error := config.InitDB()
 	fmt.Print(error)
 	// Create the user service
-	userService := &service.UserService{DB: db}
+	//userService := &service.UserService{DB: db}
+	authService := &service.AuthService{DB: db}
 
 	// Create the user handler
-	userHandler := &handler.UserHandler{Service: userService}
-
+	//userHandler := &handler.UserHandler{Service: userService}
+	authHandler := &handler.AuthHandler{Service: authService}
 	// Set up the router
-	r := router.SetupRouter(userHandler)
+	r := router.AuthRouter(authHandler)
 
 	// Start the server
 	fmt.Println("Server is running on :8080")
