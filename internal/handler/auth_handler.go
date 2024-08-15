@@ -58,3 +58,44 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		"message": message,
 	})
 }
+func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+	var credentials struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	validate := validator.New()
+
+	if err := json.NewDecoder(r.Body).Decode(&credentials); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	err := validate.Struct(&credentials)
+	if err != nil {
+		validationErrors := make(map[string]string)
+		for _, err := range err.(validator.ValidationErrors) {
+			field := err.Field()
+			tag := err.Tag()
+			validationErrors[field] = fmt.Sprintf("Field '%s' failed validation for tag '%s'", field, tag)
+		}
+		w.WriteHeader(http.StatusBadRequest)
+
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"message": "Validation error",
+			"details": validationErrors,
+		})
+		return
+	}
+
+	message, err := h.Service.Login(credentials.Email, credentials.Password)
+	if err != nil {
+		http.Error(w, message, http.StatusUnauthorized)
+		return
+	}
+
+	// Return success response
+	response := map[string]string{"message": message}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+
+}
