@@ -4,7 +4,6 @@ import (
 	"authsys/internal/database/models"
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -41,9 +40,7 @@ func (s *AuthService) Login(email string, password string) (string, error) {
 	if err != nil {
 		return "Invalid credentials", errors.New("invalid credentials")
 	}
-	fmt.Println(user.ID)
 	token, err := generateJWT(user.Email, user.Password)
-	fmt.Println(err)
 	if err != nil {
 		return "", err
 	}

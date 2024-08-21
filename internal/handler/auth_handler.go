@@ -88,7 +88,6 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	token, err := h.Service.Login(credentials.Email, credentials.Password)
 	if err != nil {
-		fmt.Println(err)
 		http.Error(w, "Failed to Authorise the User", http.StatusUnauthorized)
 		return
 	}
