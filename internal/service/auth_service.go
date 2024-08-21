@@ -2,8 +2,14 @@ package service
 
 import (
 	"authsys/internal/database/models"
+	"encoding/base64"
 	"errors"
+	"fmt"
+	"log"
+	"os"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -35,6 +41,38 @@ func (s *AuthService) Login(email string, password string) (string, error) {
 	if err != nil {
 		return "Invalid credentials", errors.New("invalid credentials")
 	}
+	fmt.Println(user.ID)
+	token, err := generateJWT(user.Email, user.Password)
+	fmt.Println(err)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
+}
 
-	return "Login successful", nil
+/*
+Function to generate the JWT token for the user
+*/
+func generateJWT(email string, password string) (string, error) {
+	expirationTime := time.Now().Add(24 * time.Hour)
+
+	claims := &models.Claims{
+		Email:    email,
+		Password: password,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expirationTime.Unix(),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	jwtKey, err := base64.StdEncoding.DecodeString(os.Getenv("JWT_KEY"))
+	if err != nil {
+		log.Fatalf("Failed to decode JWT key: %v", err)
+	}
+
+	tokenString, err := token.SignedString(jwtKey)
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
 }
