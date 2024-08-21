@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"gorm.io/gorm"
 )
 
@@ -14,4 +15,9 @@ type User struct {
 	Password  string `json:"password" validate:"required,min=8"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+type Claims struct {
+	UserID uint `json:"user_id"`
+	jwt.StandardClaims
 }
